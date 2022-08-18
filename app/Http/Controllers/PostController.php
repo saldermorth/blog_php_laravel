@@ -24,7 +24,7 @@ class PostController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, Post $post)
     {
         $request->validate([
             'title' => 'required',
@@ -39,10 +39,8 @@ class PostController extends Controller
         $post->save();
 
         return redirect()
-            ->route('posts.create')
-            ->with('success', 'Post is submitted! Title: ' .
-                $post->title . 'Description: ' .
-                $post->description);
+            ->route('posts.show', [$post])
+            ->with('success', 'Post is submitted! Title: ' . $post->title . ' Description: ' . $post->description);
     }
 
     /**
@@ -53,11 +51,9 @@ class PostController extends Controller
      */
     public function show($id)
     {
-
         return view('posts.show', [
             'post' => Post::findOrFail($id),
         ]);
-        //
     }
 
     /**
@@ -68,7 +64,9 @@ class PostController extends Controller
      */
     public function edit($id)
     {
-        //
+        return view('posts.edit', [
+            'post' => Post::findOrFail($id),
+        ]);
     }
 
     /**
@@ -78,9 +76,23 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Post $post)
     {
-        //
+        $request->validate([
+            'title' => 'required',
+            'description' => ['required', 'min:10'],
+        ]);
+
+        $post = Post::findOrFail($id);
+
+        $post->title = $request->input('title');
+        $post->description = $request->input('description');
+
+        $post->save();
+
+        return redirect()
+            ->route('posts.show', [$post])
+            ->with('success', 'Post is upadated');
     }
 
     /**
