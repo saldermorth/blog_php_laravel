@@ -7,8 +7,10 @@
 @forelse ($posts as $post)
     <div class="post-item">
         <div class="post-content">   
-            <h2> {{$post->title}}</h2>
+            <h2><a href="{{ route('posts.show', ['post' => $post->id])}}">{{$post->title}}</a> </h2>
             <p> {{$post->description}}</p>
+            <p>Id:  {{$post->id}}</p>
+            
         </div>
     </div>
         
