@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PostFormRequest;
 use App\Models\Post;
 use Illuminate\Http\Request;
 
@@ -24,19 +25,11 @@ class PostController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Post $post)
+    public function store(PostFormRequest $request)
     {
-        $request->validate([
-            'title' => 'required',
-            'description' => ['required', 'min:10'],
-        ]);
+        $validated = $request->validated();
 
-        $post = new Post();
-
-        $post->title = $request->input('title');
-        $post->description = $request->input('description');
-
-        $post->save();
+        $post = $request->user()->posts()->create($validated);
 
         return redirect()
             ->route('posts.show', [$post])
@@ -49,10 +42,10 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Post $post)
     {
         return view('posts.show', [
-            'post' => Post::findOrFail($id),
+            'post' => $post,
         ]);
     }
 
@@ -62,10 +55,11 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Post $post)
     {
+        $this->authorize('update', $post);
         return view('posts.edit', [
-            'post' => Post::findOrFail($id),
+            'post' => $post,
         ]);
     }
 
@@ -76,23 +70,16 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Post $post)
+    public function update(PostFormRequest $request, Post $post)
     {
-        $request->validate([
-            'title' => 'required',
-            'description' => ['required', 'min:10'],
-        ]);
+        $this->authorize('update', $post);
+        $validated = $request->validated();
 
-        $post = Post::findOrFail($id);
-
-        $post->title = $request->input('title');
-        $post->description = $request->input('description');
-
-        $post->save();
+        $post->update($validated);
 
         return redirect()
             ->route('posts.show', [$post])
-            ->with('success', 'Post is upadated');
+            ->with('success', 'Post is updated!');
     }
 
     /**
@@ -101,8 +88,13 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Post $post)
     {
-        //
+        $this->authorize('delete', $post);
+        $post->delete();
+
+        return redirect()
+            ->route('home')
+            ->with('success', 'Post has been deleted!');
     }
 }
