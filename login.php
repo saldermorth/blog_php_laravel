@@ -2,7 +2,7 @@
 
 
 $host = 'localhost';
-$data = 'minsandbox';
+$data = 'php';
 $user = 'Gustav';
 $pass = 'Arisa2018';
 $chrs = 'utf8';
